@@ -24,3 +24,7 @@ Route::get('/about', 'StaticPagesController@about')->name('about');
 
 //用户注册页
 Route::get('signup', 'UsersController@create')->name('signup');
+
+//路由声明时必须使用 Eloquent 模型的单数小写格式来作为路由片段参数，User 对应 {user}
+//新增resource方法遵循RESTful架构为用户资源生成路由，第一个参数为资源名称，第二个参数为控制器名称
+Route::resource('users','UsersController');
