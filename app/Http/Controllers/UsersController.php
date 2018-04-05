@@ -33,7 +33,14 @@ class UsersController extends Controller
     public function show(User $user)
     {
         // $user 通过 compact 方法转化为一个关联数组，并作为第二个参数传递给 view 方法，将数据与视图进行绑定。
-        return view('users.show',compact('user'));
+//        return view('users.show',compact('user'));
+
+        /*compact 方法可以同时接收多个参数，
+        在上面代码我们将用户数据 $user 和微博动态数据 $statuses 同时传递给用户个人页面的视图上。*/
+        $statuses = $user->statuses()
+                        ->orderBy('created_at', 'desc')
+                        ->paginate(30);
+        return view('users.show', compact('user', 'statuses'));
     }
 
     //用户注册

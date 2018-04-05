@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use Carbon\Carbon;
 use Illuminate\Support\ServiceProvider;
+use DB;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -13,7 +15,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        //本地化Carbon
+        Carbon::setLocale('zh');
+
+
+
+        //打印sql
+         /*DB::listen(function($sql) {
+             dump($sql);
+             // echo $sql->sql;
+             // dump($sql->bindings);
+         });*/
+
     }
 
     /**
