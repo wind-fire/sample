@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Notifications\ResetPassword;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Auth;
 
 class User extends Authenticatable
 {
@@ -66,8 +67,75 @@ class User extends Authenticatable
     /*该方法将当前用户发布过的所有微博从数据库中取出，并根据创建时间来倒序排序*/
     public function feed()
     {
-        return $this->statuses()
+        /*return $this->statuses()
+            ->orderBy('created_at', 'desc');*/
+
+        /*通过 followings 方法取出所有关注用户的信息，再借助 pluck 方法将 id 进行分离并赋值给 user_ids；
+        将当前用户的 id 加入到 user_ids 数组中；
+        使用 Laravel 提供的 查询构造器 whereIn 方法取出所有用户的微博动态并进行倒序排序；
+        我们使用了 Eloquent 关联的 预加载 with 方法，预加载避免了 N+1 查找的问题，大大提高了查询效率。
+        N+1 问题 的例子可以阅读此文档 Eloquent 模型关系预加载 。*/
+
+        $user_ids = Auth::user()->followings->pluck('id')->toArray();
+        array_push($user_ids, Auth::user()->id);
+        return Status::whereIn('user_id', $user_ids)
+            ->with('user')
             ->orderBy('created_at', 'desc');
+    }
+
+    /*获取粉丝*/
+    public function followers()
+    {
+        return $this->belongsToMany(User::class,'followers','user_id','follower_id');
+    }
+
+    /*获取关注的人*/
+    public function followings()
+    {
+        return $this->belongsToMany(User::class,'followers','follower_id','user_id');
+    }
+
+    /*关注*/
+    public function follow($user_ids)
+    {
+        if(!is_array($user_ids))
+        {
+            $user_ids = compact('user_ids');
+        }
+
+        $this->followings()->sync($user_ids,false);
+    }
+
+    /*取消关注*/
+    public function unfollow($user_ids)
+    {
+        if(!is_array($user_ids))
+        {
+            $user_ids = compact('user_ids');
+
+        }
+
+        $this->followings()->detach($user_ids);
+    }
+
+    public function isFollowing($user_id)
+    {
+       /*注意的是 $this->followings->followings 的用法。我们在 User 模型里定义了关联方法 followings()，
+       关联关系定义好后，我们就可以通过访问 followings 属性直接获取到关注用户的 集合。
+       这是 Laravel Eloquent 提供的「动态属性」属性功能，我们可以像在访问模型中定义的属性一样，来访问所有的关联方法。*/
+
+
+       /*还有一点需要注意的是 $user->followings 与 $user->followings() 调用时返回的数据是不一样的，
+        $user->followings 返回的是 Eloquent：集合 。而 $user->followings() 返回的是 数据库请求构建器 ，
+       followings() 的情况下，你需要使用：$user->followings()->get()
+       或者 ：$user->followings()->paginate()*/
+
+       /*方法才能获取到最终数据。可以简单理解为 followings 返回的是数据集合，
+       而 followings() 返回的是数据库查询语句。如果使用 get() 方法的话：
+       $user->followings == $user->followings()->get() // 等于 true*/
+
+
+       return $this->followings->contains($user_id);
     }
 
 
