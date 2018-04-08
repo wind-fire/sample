@@ -40,11 +40,14 @@ class SessionsController extends Controller
                 session()->flash('warning', '你的账号未激活，请检查邮箱中的注册邮件进行激活。');
                 return redirect('/');
             }
+<<<<<<< HEAD
 
 //            return redirect()->route('users.show' , [Auth::user()]);
 //            return redirect()->route('users.show', [Auth::user()]);
 
 
+=======
+>>>>>>> 1c2cf040c24fdc3a6c617d94ea08d2ee165f9117
         }else{
             session()->flash('danger','很抱歉，你的邮箱和密码不匹配');
             return redirect()->back();
